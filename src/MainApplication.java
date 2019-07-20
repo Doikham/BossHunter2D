@@ -25,7 +25,7 @@ public class MainApplication extends JFrame {
 
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                //themeSoundMain.stop();
+                themeSoundMain.stop();
             }
         });
 
@@ -36,9 +36,9 @@ public class MainApplication extends JFrame {
 
     public void AddComponents()
     {
-        //themeSound = new MySoundEffectIntro("Venus.wav");
-        //themeSound.playLoop();
-        backgroundImg = new MyImageIcon("Resources/jetpack/bg.jpg").resize(contentpane.getWidth(), contentpane.getHeight());
+        themeSoundMain = new MySoundEffectIntro("Resources/rm theme.mp3");
+        themeSoundMain.playLoop();
+        backgroundImg = new MyImageIcon("Resources/bg2.jpg").resize(contentpane.getWidth(), contentpane.getHeight());
         drawpane = new JLabel();
         drawpane.setIcon(backgroundImg);
         textView = new JTextField(30);
@@ -61,11 +61,11 @@ public class MainApplication extends JFrame {
 
             private void startButtonActionPerformed(ActionEvent evt) {
                 ChooseApplication frame2 = new ChooseApplication();
-                //addPropertyChangeListener(frame2);
+                addPropertyChangeListener(frame2);
                 frame2.setVisible(true);
                 firePropertyChange("startButtonActionPerformed", "", textView.getText());
                 setVisible(false);
-                //themeSound.stop();
+                themeSoundMain.stop();
             }
         });
 
