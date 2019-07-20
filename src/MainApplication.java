@@ -2,29 +2,17 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 
-public class MainApplication extends JFrame implements KeyListener {
+public class MainApplication extends JFrame{
     private JPanel           contentpane;
     private JLabel           drawpane;
-    //private JButton          offButton, rideButton;
-    private JToggleButton [] speedToggles;
-    private JTextField       greetText;
-    //private JComboBox        boyCombo, dragonCombo;
-    private JLabel           HeroLabel, BossLabel;
-    private MyImageIcon      backgroundImg, HeroImg, BossImg;
-    private ButtonGroup      bgroup;
-    //private MySoundEffect    themeSound, greetSound;
+    private MyLabel          HeroLabel;
+    private JLabel           BossLabel;
 
-    private int frameWidth  = 1000, frameHeight = 600;
-    private int HeroCurX    = 400, HeroCurY     = 300;
-    private int BossCurX    = 700, BossCurY     = 200;
-    private int HeroWidth   = 250, HeroHeight   = 200;
-    private int BossWidth   = 250, BossHeight   = 200;
-    private Thread HeroThread, BossThread;
-    //private boolean dragonMove = true, boyMove = true, dragonLeft = true, boyLeft = true, s = false;
+    private int BossCurX    = 900, BossCurY     = 300;
+    private int BossWidth   = 450, BossHeight   = 400;
     private int speed = 1000;
+    private double width, height;
 
     public static void main(String[] args)
     {
@@ -34,49 +22,39 @@ public class MainApplication extends JFrame implements KeyListener {
     public MainApplication()
     {
         setTitle("Boss Hunter 2D");
-        setBounds(50, 50, frameWidth, frameHeight);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+        //setUndecorated(true);
         setResizable(false);
         setVisible(true);
+        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        width = screenSize.getWidth();
+        height = screenSize.getHeight();
         setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
-
+        validate();
         contentpane = (JPanel)getContentPane();
         contentpane.setLayout(new BorderLayout());
         AddComponents();
-        setHeroThread();
-        setBossThread();
+        JOptionPane.showMessageDialog(new JFrame(), "Fight!" , "Hello!",
+                JOptionPane.INFORMATION_MESSAGE );
+        setGameThread();
     }
 
     public void AddComponents()
     {
-        backgroundImg = new MyImageIcon("Resources/background/backgrounddetailed3.png").resize(frameWidth, frameHeight);
-        HeroImg       = new MyImageIcon("Resources/Hero_sample_1.png").resize(HeroWidth, HeroHeight);
-        BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
+        MyImageIcon backgroundImg = new MyImageIcon("Resources/Background_sample_1.jpg").resize((int)width, (int)height);
+        MyImageIcon BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
 
         drawpane = new JLabel();
         drawpane.setIcon(backgroundImg);
         drawpane.setLayout(null);
 
-
-
-        HeroLabel = new JLabel(HeroImg);
-        HeroLabel.setBounds(HeroCurX, HeroCurY, HeroWidth, HeroHeight);
-        HeroLabel.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyPressed(KeyEvent e) {
-
-            }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-
-            }
-        });
+        HeroLabel = new MyLabel();
         drawpane.add(HeroLabel);
+        HeroLabel.setFocusable(true);
+        HeroLabel.requestFocus();
+        addKeyListener(HeroLabel);
+        repaint();
+
         BossLabel = new JLabel(BossImg);
         BossLabel.setBounds(BossCurX, BossCurY, BossWidth, BossHeight);
         drawpane.add(BossLabel);
@@ -86,33 +64,13 @@ public class MainApplication extends JFrame implements KeyListener {
         control.setBackground(new Color(102, 204, 0));
         contentpane.add(control, BorderLayout.NORTH);
         contentpane.add(drawpane, BorderLayout.CENTER);
-        addKeyListener(this);
         validate();
     }
 
-    public void setHeroThread()
-    {
-        // end run
-        HeroThread = new Thread() {
-            public void run() {
-                while (true) {
-
-                    repaint();
-
-                    try {
-                        Thread.sleep(speed);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } // end while
-            }
-        }; // end thread creation
-        HeroThread.start();
-    }
-
-    public void setBossThread(){
-        BossThread = new Thread() {
-            public void run(){
+    public void setGameThread(){
+        Thread BossThread = new Thread() {
+            public void run()
+            {
                 while (true) {
 
                     repaint();
@@ -127,6 +85,23 @@ public class MainApplication extends JFrame implements KeyListener {
         };
         BossThread.start();
     }
+}
+
+class MyLabel extends JLabel implements KeyListener
+{
+    private int width = 150, height = 200;
+    private MyImageIcon   HeroImage;
+    private int HeroWidth = 250, HeroHeight = 200;
+    private int HerocurX  = 90, HerocurY = 400;
+
+    public MyLabel()
+    {
+        HeroImage = new MyImageIcon("Resources/Hero_sample_1.png").resize(HeroWidth, HeroHeight);
+        setHorizontalAlignment(JLabel.CENTER);
+        setIcon(HeroImage);
+        setHeroLocation();
+        addKeyListener(this);
+    }
 
     @Override
     public void keyTyped(KeyEvent e) {
@@ -135,121 +110,37 @@ public class MainApplication extends JFrame implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_W)
-        {
-            if (HeroCurY > 0) HeroCurY -= 20;
-            else HeroCurY = 0;
-            setLocation(HeroCurX, HeroCurY);
+        switch(e.getKeyCode()){
+            case KeyEvent.VK_UP:
+                if (HerocurY > 0) HerocurY -= 20;
+                else HerocurY = 0;
+                break;
+            case KeyEvent.VK_DOWN:
+                if (HerocurY < height-200) HerocurY += 20;
+                else HerocurY = 510 - height;
+                break;
+            case KeyEvent.VK_LEFT:
+                if (HerocurX < 20) HerocurX = 635;
+                else HerocurX -= 20;
+                break;
+            case KeyEvent.VK_RIGHT:
+                if (HerocurX > 630) HerocurX = 5;
+                else HerocurX += 20;
+                break;
+            default: break;
         }
-        if (e.getKeyCode() == KeyEvent.VK_S)
-        {
-            if (HeroCurY < 510 - frameHeight) HeroCurY += 20;
-            else HeroCurY = 510 - frameHeight;
-            setLocation(HeroCurX, HeroCurY);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_A)
-        {
-            if (HeroCurX < 20) HeroCurX = 635;
-            else HeroCurX -= 20;
-            setLocation(HeroCurX, HeroCurY);
-        }
-        if (e.getKeyCode() == KeyEvent.VK_D) {
-            if (HeroCurX > 630) HeroCurX = 5;
-            else HeroCurX += 20;
-            setLocation(HeroCurX, HeroCurY);
-        }
+        setHeroLocation();
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
 
     }
-}
 
-//class MyLabel extends JLabel implements MouseListener
-//{
-//    private int width = 150, height = 200;      // adjust label size as you want
-//    private MyImageIcon   icon1, icon2;
-//    private int           curX, curY;
-//    private boolean       horizontalMove, verticalMove;
-//
-//    public MyLabel(String file1, String file2)
-//    {
-//        icon1 = new MyImageIcon(file1).resize(width, height);
-//        icon2 = new MyImageIcon(file2).resize(width, height);
-//        setHorizontalAlignment(JLabel.CENTER);
-//        setIcon(icon1);
-//        addMouseListener(this);
-//    }
-//
-//    public void setMoveConditions(int x, int y, boolean h, boolean v)
-//    {
-//        curX = x; curY = y;
-//        setBounds(curX, curY, width, height);
-//        horizontalMove = h; verticalMove = v;
-//    }
-//
-//    // add your own code
-//    public void moveUp()    {
-//        if(verticalMove) {
-//            if (curY > 0) curY -= 20;
-//            else curY = 0;
-//            setLocation(curX, curY);
-//        }
-//    }
-//    public void moveDown()  {
-//        if(verticalMove) {
-//            if (curY < 510 - height) curY += 20;
-//            else curY = 510 - height;
-//            setLocation(curX, curY);
-//        }
-//    }
-//    public void moveLeft()  {
-//        if(horizontalMove) {
-//            if (curX < 20) curX = 635;
-//            else curX -= 20;
-//            setLocation(curX, curY);
-//        }
-//    }
-//    public void moveRight() {
-//        if(horizontalMove) {
-//            if (curX > 630) curX = 5;
-//            else curX += 20;
-//            setLocation(curX, curY);
-//        }
-//    }
-//
-//
-//    @Override
-//    public void mouseClicked(MouseEvent e) {
-//        if(e.getButton() == MouseEvent.BUTTON1) {
-//            setIcon(icon2);
-//        }
-//        if(e.getButton() == MouseEvent.BUTTON3) {
-//            setIcon(icon1);
-//        }
-//    }
-//
-//    @Override
-//    public void mousePressed(MouseEvent e) {
-//
-//    }
-//
-//    @Override
-//    public void mouseReleased(MouseEvent e) {
-//
-//    }
-//
-//    @Override
-//    public void mouseEntered(MouseEvent e) {
-//
-//    }
-//
-//    @Override
-//    public void mouseExited(MouseEvent e) {
-//
-//    }
-//}
+    public void setHeroLocation(){
+        setBounds(HerocurX,HerocurY,width,height);
+    }
+}
 
 class MyImageIcon extends ImageIcon
 {
