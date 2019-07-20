@@ -1,199 +1,104 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
-public class MainApplication extends JFrame{
-    private JPanel           contentpane;
-    private JLabel           drawpane;
-    private MyLabel          JetpackLabel;
-    private JLabel           BossLabel;
-    private JButton          startButton, closeButton, highscoreButton;
-    private JTextField       scoreText;
+public class MainApplication extends JFrame {
 
-    private int BossCurX    = 900, BossCurY     = 300;
-    private int BossWidth   = 450, BossHeight   = 400;
-    private int speed = 1000;
-    private double width, height;
+    private JPanel              contentpane;
+    private JLabel              drawpane;
+    private MyImageIcon         backgroundImg;
+    private JButton             startButton;
+    private JTextField          textView;
+    private MySoundEffectIntro  themeSoundMain;
 
-    public static void main(String[] args)
-    {
-        new MainApplication();
-    }
+    public static void main(String[] args) { new MainApplication().setVisible(true); }
 
     public MainApplication()
     {
-        setTitle("Coin Collector");
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-        //setUndecorated(true);
+        setTitle("EZ Coin Collector");
+        setBounds(100, 30, 1300, 700);
         setResizable(false);
         setVisible(true);
-        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        width = screenSize.getWidth();
-        height = screenSize.getHeight();
+
         setDefaultCloseOperation( WindowConstants.EXIT_ON_CLOSE );
         validate();
-        contentpane = (JPanel)getContentPane();
+
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                //themeSoundMain.stop();
+            }
+        });
+
+        contentpane = (JPanel) getContentPane();
         contentpane.setLayout(new BorderLayout());
         AddComponents();
-        JOptionPane.showMessageDialog(new JFrame(), "Fight!" , "Hello!",
-                JOptionPane.INFORMATION_MESSAGE );
-        setGameThread();
     }
 
     public void AddComponents()
     {
-        MyImageIcon backgroundImg = new MyImageIcon("Resources/jetpack/bg2.jpg").resize((int)width, (int)height);
-        //MyImageIcon BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
-
+        //themeSound = new MySoundEffectIntro("Venus.wav");
+        //themeSound.playLoop();
+        backgroundImg = new MyImageIcon("Resources/jetpack/bg.jpg").resize(contentpane.getWidth(), contentpane.getHeight());
         drawpane = new JLabel();
         drawpane.setIcon(backgroundImg);
-        drawpane.setLayout(null);
+        textView = new JTextField(30);
+        textView.setBounds(250, 525, 350, 70);
+        textView.setFont(new Font("Arial", Font.PLAIN, 20));
+        textView.addKeyListener(new KeyAdapter() {
+            public void keyReleased(KeyEvent evt) {
+                firePropertyChange("textViewKeyReleased", "", textView.getText());
+            }
 
-        shareInt send = new shareInt();
-        send.shareDouble(width,height);
+        });
 
-        JetpackLabel = new MyLabel();
-        drawpane.add(JetpackLabel);
-        JetpackLabel.setFocusable(true);
-        JetpackLabel.requestFocus();
-        addKeyListener(JetpackLabel);
-        repaint();
-
-        //BossLabel = new JLabel(BossImg);
-        //BossLabel.setBounds(BossCurX, BossCurY, BossWidth, BossHeight);
-        //drawpane.add(BossLabel);
-
-        startButton = new JButton("Start");
+        startButton = new JButton("Press Here");
+        startButton.setBounds(655, 525, 250, 70);
+        startButton.setFont(new Font("Arial", Font.PLAIN, 20));
         startButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                //setItemThread();
-                JetpackLabel.setFocusable(true);
-                JetpackLabel.requestFocus();
-                repaint();
+            public void actionPerformed(ActionEvent evt) {
+                startButtonActionPerformed(evt);
+            }
+
+            private void startButtonActionPerformed(ActionEvent evt) {
+                ChooseApplication frame2 = new ChooseApplication();
+                //addPropertyChangeListener(frame2);
+                frame2.setVisible(true);
+                firePropertyChange("startButtonActionPerformed", "", textView.getText());
+                setVisible(false);
+                //themeSound.stop();
             }
         });
 
-        closeButton = new JButton("Close the program");
-        closeButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
-            }
-        });
-
-        highscoreButton = new JButton("HIGH SCORE");
-        highscoreButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                dispose();
-                //new highscoreFrame();
-            }
-        });
-
-        scoreText = new JTextField("0", 5);
-        scoreText.setEditable(false);
-        JPanel control  = new JPanel();
-        control.setBounds(0,0,1000,50);
-        control.add(closeButton);
-        control.add(startButton);
-        control.add(new JLabel("Score : "));
-        control.add(scoreText);
-        control.add(highscoreButton);
-
-        control.setBounds(0,0,1000,50);
-        control.setBackground(new Color(102, 204, 0));
-        contentpane.add(control, BorderLayout.NORTH);
+        contentpane.add(textView);
+        contentpane.add(startButton);
         contentpane.add(drawpane, BorderLayout.CENTER);
+        repaint();
         validate();
     }
-
-    public void setGameThread(){
-        Thread BossThread = new Thread() {
-            public void run()
-            {
-                while (true) {
-
-                    repaint();
-
-                    try {
-                        Thread.sleep(speed);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                } // end while
-            }
-        };
-        BossThread.start();
-    }
 }
 
-class MyLabel extends JLabel implements KeyListener
-{
-    private int width = 150, height = 200;
-    private MyImageIcon   HeroImage;
-    private int HeroWidth = 250, HeroHeight = 200;
-    private int HerocurX  = 90, HerocurY = 400;
-    private shareInt receive;
+class MySoundEffectIntro {
 
-    public MyLabel()
-    {
-        HeroImage = new MyImageIcon("Resources/jetpack/jetpackboy.png").resize(HeroWidth, HeroHeight);
-        setHorizontalAlignment(JLabel.CENTER);
-        setIcon(HeroImage);
-        setHeroLocation();
-        addKeyListener(this);
-    }
+    private java.applet.AudioClip audio_main;
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        switch(e.getKeyCode()){
-            case KeyEvent.VK_UP:
-                if (HerocurY > 0) HerocurY -= 20;
-                else HerocurY = 0;
-                break;
-            case KeyEvent.VK_DOWN:
-                if (HerocurY < (int)receive.height-HeroHeight-30) HerocurY += 20;
-                else HerocurY = (int)receive.height-HeroHeight-30;
-                break;
-            default: break;
+    public MySoundEffectIntro(String filename) {
+        try {
+            java.io.File file1 = new java.io.File(filename);
+            audio_main = java.applet.Applet.newAudioClip(file1.toURL());
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
-        setHeroLocation();
     }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-
+    public void playOnce() {
+        audio_main.play();
     }
 
-    public void setHeroLocation(){
-        setBounds(HerocurX,HerocurY,width,height);
+    public void playLoop() {
+        audio_main.loop();
     }
-}
 
-class MyImageIcon extends ImageIcon
-{
-    public MyImageIcon(String fname)  { super(fname); }
-    public MyImageIcon(Image image)   { super(image); }
-
-    public MyImageIcon resize(int width, int height)
-    {
-        Image oldimg = this.getImage();
-        Image newimg = oldimg.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
-        return new MyImageIcon(newimg);
+    public void stop() {
+        audio_main.stop();
     }
-}
-
-class shareInt{
-    protected static double width,height;
-    public void shareDouble(double w,double h){width = w;height = h;}
-
 }
