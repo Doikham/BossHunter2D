@@ -1,13 +1,17 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class MainApplication extends JFrame{
     private JPanel           contentpane;
     private JLabel           drawpane;
-    private MyLabel          HeroLabel;
+    private MyLabel          JetpackLabel;
     private JLabel           BossLabel;
+    private JButton          startButton, closeButton, highscoreButton;
+    private JTextField       scoreText;
 
     private int BossCurX    = 900, BossCurY     = 300;
     private int BossWidth   = 450, BossHeight   = 400;
@@ -21,7 +25,7 @@ public class MainApplication extends JFrame{
 
     public MainApplication()
     {
-        setTitle("Boss Hunter 2D");
+        setTitle("Coin Collector");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         //setUndecorated(true);
         setResizable(false);
@@ -41,25 +45,65 @@ public class MainApplication extends JFrame{
 
     public void AddComponents()
     {
-        MyImageIcon backgroundImg = new MyImageIcon("Resources/Background_sample_1.jpg").resize((int)width, (int)height);
-        MyImageIcon BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
+        MyImageIcon backgroundImg = new MyImageIcon("Resources/jetpack/bg2.jpg").resize((int)width, (int)height);
+        //MyImageIcon BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
 
         drawpane = new JLabel();
         drawpane.setIcon(backgroundImg);
         drawpane.setLayout(null);
 
-        HeroLabel = new MyLabel();
-        drawpane.add(HeroLabel);
-        HeroLabel.setFocusable(true);
-        HeroLabel.requestFocus();
-        addKeyListener(HeroLabel);
+        shareInt send = new shareInt();
+        send.shareDouble(width,height);
+
+        JetpackLabel = new MyLabel();
+        drawpane.add(JetpackLabel);
+        JetpackLabel.setFocusable(true);
+        JetpackLabel.requestFocus();
+        addKeyListener(JetpackLabel);
         repaint();
 
-        BossLabel = new JLabel(BossImg);
-        BossLabel.setBounds(BossCurX, BossCurY, BossWidth, BossHeight);
-        drawpane.add(BossLabel);
+        //BossLabel = new JLabel(BossImg);
+        //BossLabel.setBounds(BossCurX, BossCurY, BossWidth, BossHeight);
+        //drawpane.add(BossLabel);
 
-        JPanel control = new JPanel();
+        startButton = new JButton("Start");
+        startButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //setItemThread();
+                JetpackLabel.setFocusable(true);
+                JetpackLabel.requestFocus();
+                repaint();
+            }
+        });
+
+        closeButton = new JButton("Close the program");
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        });
+
+        highscoreButton = new JButton("HIGH SCORE");
+        highscoreButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dispose();
+                //new highscoreFrame();
+            }
+        });
+
+        scoreText = new JTextField("0", 5);
+        scoreText.setEditable(false);
+        JPanel control  = new JPanel();
+        control.setBounds(0,0,1000,50);
+        control.add(closeButton);
+        control.add(startButton);
+        control.add(new JLabel("Score : "));
+        control.add(scoreText);
+        control.add(highscoreButton);
+
         control.setBounds(0,0,1000,50);
         control.setBackground(new Color(102, 204, 0));
         contentpane.add(control, BorderLayout.NORTH);
@@ -93,10 +137,11 @@ class MyLabel extends JLabel implements KeyListener
     private MyImageIcon   HeroImage;
     private int HeroWidth = 250, HeroHeight = 200;
     private int HerocurX  = 90, HerocurY = 400;
+    private shareInt receive;
 
     public MyLabel()
     {
-        HeroImage = new MyImageIcon("Resources/Hero_sample_1.png").resize(HeroWidth, HeroHeight);
+        HeroImage = new MyImageIcon("Resources/jetpack/jetpackboy.png").resize(HeroWidth, HeroHeight);
         setHorizontalAlignment(JLabel.CENTER);
         setIcon(HeroImage);
         setHeroLocation();
@@ -116,16 +161,8 @@ class MyLabel extends JLabel implements KeyListener
                 else HerocurY = 0;
                 break;
             case KeyEvent.VK_DOWN:
-                if (HerocurY < height-200) HerocurY += 20;
-                else HerocurY = 510 - height;
-                break;
-            case KeyEvent.VK_LEFT:
-                if (HerocurX < 20) HerocurX = 635;
-                else HerocurX -= 20;
-                break;
-            case KeyEvent.VK_RIGHT:
-                if (HerocurX > 630) HerocurX = 5;
-                else HerocurX += 20;
+                if (HerocurY < (int)receive.height-HeroHeight-30) HerocurY += 20;
+                else HerocurY = (int)receive.height-HeroHeight-30;
                 break;
             default: break;
         }
@@ -153,4 +190,10 @@ class MyImageIcon extends ImageIcon
         Image newimg = oldimg.getScaledInstance(width, height, java.awt.Image.SCALE_SMOOTH);
         return new MyImageIcon(newimg);
     }
-};
+}
+
+class shareInt{
+    protected static double width,height;
+    public void shareDouble(double w,double h){width = w;height = h;}
+
+}
