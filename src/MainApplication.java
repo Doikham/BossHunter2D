@@ -48,13 +48,15 @@ public class MainApplication extends JFrame implements KeyListener {
 
     public void AddComponents()
     {
-        backgroundImg = new MyImageIcon("Resources/Background_sample_1.jpg").resize(frameWidth, frameHeight);
+        backgroundImg = new MyImageIcon("Resources/background/backgrounddetailed3.png").resize(frameWidth, frameHeight);
         HeroImg       = new MyImageIcon("Resources/Hero_sample_1.png").resize(HeroWidth, HeroHeight);
         BossImg       = new MyImageIcon("Resources/Boss_sample_1.png").resize(BossWidth, BossHeight);
 
         drawpane = new JLabel();
         drawpane.setIcon(backgroundImg);
         drawpane.setLayout(null);
+
+
 
         HeroLabel = new JLabel(HeroImg);
         HeroLabel.setBounds(HeroCurX, HeroCurY, HeroWidth, HeroHeight);
